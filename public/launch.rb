@@ -28,7 +28,7 @@
 # <-----------------------------[ Gemfile ]--------------------------->
 
 remove_file("Gemfile")
-template("http://railsrocket.me/templates/Gemfile")
+template("http://railsrocket.me/templates/Gemfile", "Gemfile")
 
 # <-----------------------------[ Ask User ]-------------------------->
 
