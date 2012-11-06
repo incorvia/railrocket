@@ -25,10 +25,15 @@
 @rocket = {}
 @rocket[:installers] = []
 
+# <-----------------------------[ Gemfile ]--------------------------->
+
+remove_file("Gemfile")
+template("/templates/Gemfile")
+
 # <-----------------------------[ Ask User ]-------------------------->
 
 # Git
-if yes?("\nInitiate a new git repository?\n")
+if yes?("\nInitiate a new git repository? (y|n)\n")
   @rocket[:installers] << :git
 end
 
@@ -37,6 +42,8 @@ end
 if @rocket[:installers].include?(:git)
   git :init
 end
+
+# <------------------------------[ Rspec ]---------------------------->
 
 
 
