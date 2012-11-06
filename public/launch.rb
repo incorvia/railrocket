@@ -20,11 +20,26 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-# <-----------------------[ Git Initialization ]---------------------->
+# <------------------------------[ Setup ]---------------------------->
 
-git :init
+@rocket = {}
+@rocket[:installers] = []
 
-# <------------------------------[ Setup ]----------------------------->
+# <-----------------------------[ Ask User ]-------------------------->
+
+# Git
+if yes? 'Initiate a new git repository'
+  @rocket[:installers] << :git
+end
+
+# <-------------------------------[ Git ]----------------------------->
+
+if @rocket[:installers].include?(:git)
+  git :init
+end
+
+
+
 
 
 
