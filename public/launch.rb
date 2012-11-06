@@ -28,7 +28,7 @@
 # <-----------------------------[ Ask User ]-------------------------->
 
 # Git
-if yes? 'Initiate a new git repository?'
+if yes?("\nInitiate a new git repository?\n")
   @rocket[:installers] << :git
 end
 
