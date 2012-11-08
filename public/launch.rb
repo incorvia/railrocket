@@ -27,13 +27,11 @@ require 'pry'
 class RailRocket
   include ActiveSupport::Callbacks
 
-  attr_accessor :generator, :rocket
+  attr_accessor :generator, :engines
 
   def initialize(generator)
     @generator = generator
-    @rocket = {}
-    @rocket[:engines] = []
-    @rocket[:launchers] = []
+    @engines = []
   end
 
   def method_missing(method_name, *args, &block)
@@ -47,7 +45,9 @@ class RailRocket
   define_callbacks :preflight, :launcher, :postflight
 
   def preflight!
-    run_callbacks :preflight
+    run_callbacks :preflight do
+      run('bundle install')
+    end
   end
 
   def launch!
@@ -75,12 +75,12 @@ class RailRocket
 
     def git_preflight
       if yes?("\nInitiate a new git repository? (y|n)\n")
-        rocket[:launchers] << :git
+        engines << :git
       end
     end
 
     def git_launch
-      git :init
+      git :init if engines.include?(:git)
     end
   end
 end
@@ -102,12 +102,34 @@ class RailRocket
   end
 end
 
-# <------------------------[ Run RailRocket ]------------------------->
+# <-----------------------------[ RSpec ]---------------------------->
+
+class RailRocket
+  module Rspec
+
+    def self.extended(base)
+      base.class.set_callback :launcher, :before, :rspec_launcher
+    end
+
+    def rspec_launcher
+      remove_file("test")
+      generate("rspec:install")
+    end
+  end
+end
+
+
+# <---------------------------[ RailRocket ]------------------------->
 
 rocket = RailRocket.new(self)
 
+# <--------------------------[ Add Modules ]------------------------->
+
 rocket.extend(RailRocket::Git)
 rocket.extend(RailRocket::Gemfile)
+rocket.extend(RailRocket::Rspec)
+
+# <----------------------------[ Launch ]---------------------------->
 
 rocket.preflight!
 rocket.launch!
