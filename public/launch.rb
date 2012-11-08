@@ -44,34 +44,22 @@ class RailRocket
     end
   end
 
+  define_callbacks :preflight, :launcher, :postflight
+
+  def preflight!
+    run_callbacks :preflight
+  end
+
   def launch!
-    rocket[:engines].each do |engine|
-      run_callbacks "#{engine}_launcher" do
-        launcher(engine)
-      end
-    end
+    run_callbacks :launcher
   end
 
-  def launcher(engine)
-    "Starting #{engine} engine! ......."
+  def postflight!
+    run_callbacks :postflight
   end
-end
 
-# <---------------------------[ Engine ]--------------------------->
-
-class RailRocket
-  module Engine
-    include ActiveSupport::Inflector
-
-    def self.extended(klass)
-      klass.define_singleton_method :extended do |base|
-        engine = klass.name.demodulize.downcase.to_sym
-        base.rocket[:engines] << engine
-        base.class.define_callbacks "#{engine}_launcher"
-        base.class.set_callback "#{engine}_launcher", :before, "#{engine}_preflight"
-        base.class.set_callback "#{engine}_launcher", :after, "#{engine}_takeoff"
-      end
-    end
+  def status(engine, state)
+    "Running #{state} for #{engine} engine! ......."
   end
 end
 
@@ -79,7 +67,11 @@ end
 
 class RailRocket
   module Git
-    extend RailRocket::Engine
+
+    def self.extended(base)
+      base.class.set_callback :preflight, :before, :git_preflight
+      base.class.set_callback :launcher, :after, :git_launch
+    end
 
     def git_preflight
       if yes?("\nInitiate a new git repository? (y|n)\n")
@@ -87,7 +79,7 @@ class RailRocket
       end
     end
 
-    def git_takeoff
+    def git_launch
       git :init
     end
   end
@@ -97,12 +89,12 @@ end
 
 class RailRocket
   module Gemfile
-    extend RailRocket::Engine
 
-    def gemfile_preflight
+    def self.extended(base)
+      base.class.set_callback :preflight, :before, :gemfile_preflight
     end
 
-    def gemfile_takeoff
+    def gemfile_preflight
       remove_file("Gemfile")
       data = open('http://www.railrocket.me/templates/Gemfile').read
       create_file("Gemfile", data)
@@ -117,4 +109,6 @@ rocket = RailRocket.new(self)
 rocket.extend(RailRocket::Git)
 rocket.extend(RailRocket::Gemfile)
 
+rocket.preflight!
 rocket.launch!
+rocket.postflight!
