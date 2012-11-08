@@ -20,7 +20,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 require 'open-uri'
-require 'pry'
 
 # <-----------------------[ RailRocket Class ]----------------------->
 
@@ -61,6 +60,10 @@ class RailRocket
   def status(engine, state)
     "Running #{state} for #{engine} engine! ......."
   end
+
+  def ask_tab(tabs)
+    "     " * tabs
+  end
 end
 
 # <-----------------------------[ Git ]----------------------------->
@@ -70,17 +73,14 @@ class RailRocket
 
     def self.extended(base)
       base.class.set_callback :preflight, :before, :git_preflight
-      base.class.set_callback :launcher, :after, :git_launch
     end
 
     def git_preflight
       if yes?("\nInitiate a new git repository? (y|n)\n")
-        engines << :git
+        git :init
+        run('git add .')
+        run('git commit -m "initial commit"')
       end
-    end
-
-    def git_launch
-      git :init if engines.include?(:git)
     end
   end
 end
@@ -118,18 +118,79 @@ class RailRocket
   end
 end
 
+# <----------------------------[ Database ]-------------------------->
+
+class RailRocket
+  module Database
+
+    def self.extended(base)
+      base.class.set_callback :preflight, :before, :database_preflight
+      base.class.set_callback :launcher, :before, :database_launcher
+    end
+
+    def database_preflight
+      question = "What database would you like to use? (1)\n"
+      answer1 = ask_tab(1) + "1) Mongoid\n"
+
+      case ask(question + answer1).to_i
+      when 1
+        engines << :mongo
+      end
+      database_gemfile
+    end
+
+    def database_gemfile
+      if engines.include?(:mongo)
+        gsub_file "Gemfile", /gem 'sqlite3'/, "gem 'mongoid'"
+      end
+    end
+
+    def database_launcher
+      if engines.include?(:mongo)
+        mongo_launcher
+      end
+    end
+
+    def mongo_launcher
+      generate('mongoid:config')
+
+      app_requires = <<-END.strip_heredoc.chomp
+        require "action_controller/railtie"
+        require "action_mailer/railtie"
+        require "active_resource/railtie"
+        require "sprockets/railtie"
+      END
+
+      gsub_file("config/application.rb", /require 'rails\/all'/, app_requires)
+      gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans")
+
+      comment_active_record_config([
+        "config/application.rb",
+        "config/environments/development.rb",
+        "config/environments/test.rb",
+      ])
+    end
+
+    def comment_active_record_config(files)
+      files.each do |file|
+        gsub_file(file, /config\.active_record/, "# config.active_record")
+      end
+    end
+  end
+end
 
 # <---------------------------[ RailRocket ]------------------------->
 
 rocket = RailRocket.new(self)
 
-# <--------------------------[ Add Modules ]------------------------->
+# <---------------------------[ Add Modules ]------------------------>
 
 rocket.extend(RailRocket::Git)
 rocket.extend(RailRocket::Gemfile)
 rocket.extend(RailRocket::Rspec)
+rocket.extend(RailRocket::Database)
 
-# <----------------------------[ Launch ]---------------------------->
+# <-----------------------------[ Launch ]--------------------------->
 
 rocket.preflight!
 rocket.launch!
