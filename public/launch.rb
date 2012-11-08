@@ -19,6 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+require 'open-uri'
 
 # <------------------------------[ Setup ]---------------------------->
 
@@ -28,7 +29,7 @@
 # <-----------------------------[ Gemfile ]--------------------------->
 
 remove_file("Gemfile")
-template("http://railsrocket.me/templates/Gemfile", "Gemfile")
+create_file("Gemfile", open('http://railrocket.me/templates/Gemfile').read)
 
 # <-----------------------------[ Ask User ]-------------------------->
 
