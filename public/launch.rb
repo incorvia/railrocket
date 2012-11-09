@@ -61,6 +61,15 @@ class RailRocket
     "Running #{state} for #{engine} engine! ......."
   end
 
+  def remote_template(source, destination, bind)
+    require 'pry'
+    binding.pry
+    render = open(source).read
+    create_file destination, nil, config do
+      ERB.new(render, nil, '-').result(bind)
+    end
+  end
+
   def ask_tab(tabs)
     "     " * tabs
   end
@@ -96,8 +105,7 @@ class RailRocket
 
     def gemfile_preflight
       remove_file("Gemfile")
-      data = open('http://www.railrocket.me/templates/Gemfile').read
-      create_file("Gemfile", data)
+      get('http://www.railrocket.me/templates/gemfiles/default', "Gemfile")
     end
   end
 end
@@ -131,10 +139,13 @@ class RailRocket
     def database_preflight
       question = "What database would you like to use? (1)\n"
       answer1 = ask_tab(1) + "1) Mongoid\n"
+      answer2 = ask_tab(1) + "2) Postgres\n"
 
       case ask(question + answer1).to_i
       when 1
         engines << :mongo
+      when 2
+        engines << :postgres
       end
       database_gemfile
     end
@@ -142,12 +153,16 @@ class RailRocket
     def database_gemfile
       if engines.include?(:mongo)
         gsub_file "Gemfile", /gem 'sqlite3'/, "gem 'mongoid'"
+      elsif engines.include?(:postgres)
+        gsub_file "Gemfile", /gem 'sqlite3'/, "gem 'pg'"
       end
     end
 
     def database_launcher
       if engines.include?(:mongo)
         mongo_launcher
+      elsif engines.include?(:postgres)
+        postgres_launcher
       end
     end
 
@@ -169,6 +184,12 @@ class RailRocket
         "config/environments/development.rb",
         "config/environments/test.rb",
       ])
+    end
+
+    def postgres_launcher
+      source = 'http://www.railrocket.me/templates/database/postgres/database.yml'
+      destination = 'config/database.yml'
+      remote_template(source, destination, binding)
     end
 
     def comment_active_record_config(files)
