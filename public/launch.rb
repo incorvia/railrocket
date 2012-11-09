@@ -141,7 +141,7 @@ class RailRocket
       answer1 = ask_tab(1) + "1) Mongoid\n"
       answer2 = ask_tab(1) + "2) Postgres\n"
 
-      case ask(question + answer1).to_i
+      case ask(question + answer1 + answer2).to_i
       when 1
         engines << :mongo
       when 2
@@ -189,6 +189,7 @@ class RailRocket
     def postgres_launcher
       source = 'http://www.railrocket.me/templates/database/postgres/database.yml.tt'
       destination = 'config/database.yml'
+      app_name = self.app_path
       remote_template(source, destination, binding)
     end
 
