@@ -26,9 +26,6 @@ require 'open-uri'
 class RailRocket
   include ActiveSupport::Callbacks
 
-  ROCKET = "http://www.railrocket.me"
-  SILENT = { verbose: false }
-
   attr_accessor :generator, :engines
 
   def initialize(generator)
@@ -47,14 +44,14 @@ class RailRocket
   define_callbacks :preflight, :launcher, :postflight
 
   def welcome!
-    render = open("#{ROCKET}/welcome.rb").read
+    render = open(rocket('welcome.rb')).read
     puts render
   end
 
   def preflight!
     run_callbacks :preflight do
-      puts "\n#{'=' * 16} Running Bundle Install #{'=' * 16}\n\n"
-      run('bundle install', SILENT)
+      puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
+      run('bundle install', silent)
     end
   end
 
@@ -74,6 +71,14 @@ class RailRocket
 
   def ask_tab(tabs)
     "     " * tabs
+  end
+
+  def rocket(url)
+    "http://www.railrocket.me/#{url}"
+  end
+
+  def silent
+    { verbose: false }
   end
 end
 
@@ -113,8 +118,8 @@ class RailRocket
     end
 
     def gemfile_preflight
-      remove_file("Gemfile", SILENT)
-      get("#{ROCKET}/templates/gemfiles/default", "Gemfile", SILENT)
+      remove_file("Gemfile", silent)
+      get(rocket('templates/gemfiles/default'), "Gemfile", silent)
     end
   end
 end
@@ -162,9 +167,9 @@ class RailRocket
 
     def database_gemfile
       if mongo?
-        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", SILENT)
+        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", silent)
       elsif postgres?
-        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'pg'", SILENT)
+        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'pg'", silent)
       end
     end
 
@@ -205,7 +210,7 @@ class RailRocket
     end
 
     def postgres_launcher
-      source = "#{ROCKET}/templates/database/postgres/database.yml.tt"
+      source = rocket('templates/database/postgres/database.yml.tt')
       destination = 'config/database.yml'
       app_name = self.app_path
       remote_template(source, destination, binding)
