@@ -50,7 +50,8 @@ class RailRocket
 
   def preflight!
     run_callbacks :preflight do
-      run('bundle install')
+      puts "\n================ Running Bundle Install =================\n\n"
+      run('bundle install', verbose: false)
     end
   end
 
@@ -60,10 +61,6 @@ class RailRocket
 
   def postflight!
     run_callbacks :postflight
-  end
-
-  def status(engine, state)
-    "Running #{state} for #{engine} engine! ......."
   end
 
   def remote_template(source, destination, bind)
@@ -84,10 +81,17 @@ class RailRocket
 
     def self.extended(base)
       base.class.set_callback :preflight, :before, :git_preflight
+      base.class.set_callback :postflight, :after, :git_postflight
     end
 
     def git_preflight
-      if yes?("\nInitiate a new git repository? (y|n)\n")
+      if yes?("\nInitialize a new git repository? (y|n)\n\n")
+        engines << :git
+      end
+    end
+
+    def git_postflight
+      if engines.include?(:git)
         git :init
         run('git add .')
         run('git commit -m "initial commit"')
@@ -106,8 +110,8 @@ class RailRocket
     end
 
     def gemfile_preflight
-      remove_file("Gemfile")
-      get('http://www.railrocket.me/templates/gemfiles/default', "Gemfile")
+      remove_file("Gemfile", verbose: false)
+      get('http://www.railrocket.me/templates/gemfiles/default', "Gemfile", verbose: false)
     end
   end
 end
@@ -132,6 +136,7 @@ end
 
 class RailRocket
   module Database
+    DATABASES = [:mongo, :postgres]
 
     def self.extended(base)
       base.class.set_callback :preflight, :before, :database_preflight
@@ -139,9 +144,9 @@ class RailRocket
     end
 
     def database_preflight
-      question = "What database would you like to use? (1|2)\n"
+      question = "\nWhat database would you like to use? (1|2)\n\n"
       answer1 = ask_tab(1) + "1) Mongoid\n"
-      answer2 = ask_tab(1) + "2) Postgres\n"
+      answer2 = ask_tab(1) + "2) Postgres\n\n"
 
       case ask(question + answer1 + answer2).to_i
       when 1
@@ -153,20 +158,26 @@ class RailRocket
     end
 
     def database_gemfile
-      if engines.include?(:mongo)
-        gsub_file "Gemfile", /gem 'sqlite3'/, "gem 'mongoid'"
-      elsif engines.include?(:postgres)
-        gsub_file "Gemfile", /gem 'sqlite3'/, "gem 'pg'"
+      if mongo?
+        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", verbose: false)
+      elsif postgres?
+        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'pg'", verbose: false)
       end
     end
 
     def database_launcher
       remove_file("config/database.yml")
 
-      if engines.include?(:mongo)
+      if mongo?
         mongo_launcher
-      elsif engines.include?(:postgres)
+      elsif postgres?
         postgres_launcher
+      end
+    end
+
+    DATABASES.each do |db|
+      define_method "#{db}?" do
+        self.engines.include?(db)
       end
     end
 
