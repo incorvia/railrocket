@@ -187,7 +187,7 @@ class RailRocket
     end
 
     def postgres_launcher
-      source = 'http://www.railrocket.me/templates/database/postgres/database.yml'
+      source = 'http://www.railrocket.me/templates/database/postgres/database.yml.tt'
       destination = 'config/database.yml'
       remote_template(source, destination, binding)
     end
