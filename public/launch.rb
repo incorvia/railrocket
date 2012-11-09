@@ -222,6 +222,21 @@ class RailRocket
   end
 end
 
+# <--------------------------[ configatron ]------------------------->
+
+class RailRocket
+  module Configatron
+
+    def self.extended(base)
+      base.class.set_callback :launcher, :before, :configatron_launcher
+    end
+
+    def rspec_launcher
+      generate("configatron:install")
+    end
+  end
+end
+
 # <---------------------------[ RailRocket ]------------------------->
 
 rocket = RailRocket.new(self)
@@ -231,6 +246,7 @@ rocket = RailRocket.new(self)
 rocket.extend(RailRocket::Git)
 rocket.extend(RailRocket::Gemfile)
 rocket.extend(RailRocket::Rspec)
+rocket.extend(RailRocket::Configatron)
 rocket.extend(RailRocket::Database)
 
 # <-----------------------------[ Launch ]--------------------------->
