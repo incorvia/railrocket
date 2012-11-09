@@ -1,41 +1,29 @@
-        ____        _ __   ____             __        __
-       / __ \____ _(_) /  / __ \____  _____/ /_____  / /_
-      / /_/ / __ `/ / /  / /_/ / __ \/ ___/ //_/ _ \/ __/
-     / _, _/ /_/ / / /  / _, _/ /_/ / /__/ ,< /  __/ /_
-    /_/ |_|\__,_/_/_/  /_/ |_|\____/\___/_/|_|\___/\__/
-                                                      ?=
-                                              7I....,+I.?
-                                           ?...?IIIIIII.7
-                                       I..=IIIIIIIIIIII.
-                                     ..~IIIIIIIIIIIIII=.
-                                  7..IIIIIIIIIIIIIIIII..
-                                 ..IIIIIIIIIIIIIIIIIII.I
-                              =.:IIIIIIIIIIIIIIIIIIIII.
-                             .:IIIIIII......IIIIIIIII~~
-                           ..IIIIIII:...++...IIIIIIII.
-                         7.=IIIIIIII..I7777..,IIIIII=.
-                   77I??..IIIIIIIII,..III77:..IIIIII.7
-             ..,:~==++?.=IIIIIIIIII?..IIIII..IIIIII.,
-            ..???????+.=IIIIIIIIIIII........:IIIIII.
-            .????????.IIIIIIIIIIIIIIII+...=IIIIIII.
-           .???????:.IIIIIIIIII~IIIIIIIIIIIIIIIII.:
-          ..??????,.IIIIIIII+..?..IIIIIIIIIIIIII..
-         :.??????+.IIIIIII+.~???,..IIIIIIIIIIII:.
-         .??????+.IIIIIII..??,...,IIIIIIIIIIII..
-       7.??????+.IIIIIII.=?=.=,.IIIIIIIIIIIII.=
-       ,..........~IIII.??=.?..IIIIIIIIIIIII.
-       7 7I~~~~~=+~..:.??..+.~IIIIIIIIIIII..
-     7I~~~~~++++++++.:??.?..IIIIIIIIIIII~.
-   77~~~~~~=+++=+++.:?,.?.:IIIIIIIIIIII...
-   ~~~~~~~~~~~~++++.......IIIIIIIIII=..?+.
-  +~~~~+~~~~~~+++++++++++,.IIIIIII,.:???=.
-     7~~~~~~~+++++++++++++~.III..,??????:.
-    7~~~~~~~++=~~++++++++~~...,?????????,.
-   7~~~~~~~~~~~~++++++++~~~+.???????????..
-  7~~~~~~~~~~~~+++~~++++~~7,.?????????=..+
- 7~~~~~~~I~~~~~~~~~~~+=~~7 .:?????:..=7
- ~~~~=7  7~~~~~~?~~~~~~~7  .+?+...7
- 77      +~~~~~77~~~~~~7   ...+7
-        7~~~~I7 7~~~~=
-        ?~~=    7~~~77
-        ~=7     7~77
+   ___       _ __  ___           __       __
+  / _ \___ _(_) / / _ \___  ____/ /_____ / /_
+ / , _/ _ `/ / / / , _/ _ \/ __/  '_/ -_) __/
+/_/|_|\_,_/_/_/ /_/|_|\___/\__/_/\_\\__/\__/
+
+                                   7...?
+                              7..?IIII?7
+                           7.=IIIIIIII.
+                         .,IIIIIIIIIII.
+                       .IIIIIIIIIIIIII.
+                     .?IIII....IIIIII~
+                   +.IIIII..77I.IIIII.
+               7I?.IIIIII,.IIII.?III~7
+          .??????.IIIIIIII..II..IIII.
+         7:????=,IIIIIIIIIII,:IIIII.
+         .????:=IIIIII..IIIIIIIIII.
+        .????:+IIII.:??..IIIIIIII.7
+       ,????+:IIII.??.+.IIIIIIII.7
+       ...~:~.,II.?.+.IIIIIIIII.
+       ~~~=++++,.?.?.IIIIIIII.=
+    7~~~~~=~++.??..IIIIIIII:..
+   ?~~~~~~~+++++,=+.IIIII..??.
+     7~~~~+++++++++~.I..?????.
+    7~~~~+~~~+++++~~.????????.
+  7?~~~~~~~~+~~=+~~7.?????+..7
+  7~~~777~~~~~~~~~  .??..7
+  77   7~~~I ~~~~7  .I
+       I~~7  ~~?
+       77    77
