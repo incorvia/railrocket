@@ -62,12 +62,9 @@ class RailRocket
   end
 
   def remote_template(source, destination, bind)
-    require 'pry'
-    binding.pry
     render = open(source).read
-    create_file destination, nil, config do
-      ERB.new(render, nil, '-').result(bind)
-    end
+    data = ERB.new(render, nil, '-').result(bind)
+    create_file destination, data
   end
 
   def ask_tab(tabs)
@@ -137,7 +134,7 @@ class RailRocket
     end
 
     def database_preflight
-      question = "What database would you like to use? (1)\n"
+      question = "What database would you like to use? (1|2)\n"
       answer1 = ask_tab(1) + "1) Mongoid\n"
       answer2 = ask_tab(1) + "2) Postgres\n"
 
@@ -159,6 +156,8 @@ class RailRocket
     end
 
     def database_launcher
+      remove_file("config/database.yml")
+
       if engines.include?(:mongo)
         mongo_launcher
       elsif engines.include?(:postgres)
