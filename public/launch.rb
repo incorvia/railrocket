@@ -43,6 +43,11 @@ class RailRocket
 
   define_callbacks :preflight, :launcher, :postflight
 
+  def welcome!
+    render = open('http://www.railrocket.me/welcome.rb').read
+    puts render
+  end
+
   def preflight!
     run_callbacks :preflight do
       run('bundle install')
@@ -213,6 +218,7 @@ rocket.extend(RailRocket::Database)
 
 # <-----------------------------[ Launch ]--------------------------->
 
+rocket.welcome!
 rocket.preflight!
 rocket.launch!
 rocket.postflight!
