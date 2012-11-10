@@ -73,7 +73,7 @@ class RailRocket
   end
 
   def master(url)
-    "https://github.com/rails/rails/blob/master/#{url}"
+    "https://raw.github.com/rails/rails/master/#{url}"
   end
 
   def silent
