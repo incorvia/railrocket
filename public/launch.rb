@@ -22,8 +22,6 @@
 # <-----------------------[ RailRocket Class ]----------------------->
 
 class RailRocket
-  include ActiveSupport::Callbacks
-
   attr_accessor :generator, :engines
 
   def initialize(generator)
