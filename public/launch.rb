@@ -122,7 +122,7 @@ class RailRocket
   end
 end
 
-# <------------------------[ database ]---------------------------->
+# <------------------------[ database ]--------------------------->
 
 class RailRocket
   module Database
