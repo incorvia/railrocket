@@ -1,0 +1,23 @@
+source 'https://rubygems.org'
+
+gem 'rails'
+gem 'jquery-rails'
+gem 'thin'
+gem 'configatron'
+<%= mongo? ? "gem 'mongo'" : "REMOVE" %>
+<%= postgres? ? "gem 'postgres'" : "REMOVE" %>
+
+group :assets do
+  gem 'sass-rails'
+  gem 'coffee-rails'
+  gem 'uglifier'
+<%= bootstrap? ? "gem 'bootstrap-sass'" : "REMOVE" %>
+end
+
+group :development, :test do
+  gem 'vcr'
+  gem 'timecop'
+  gem 'factory_girl_rails'
+  gem 'guard'
+  gem 'rspec-rails'
+end

@@ -47,11 +47,7 @@ class RailRocket
   end
 
   def preflight!
-    run_callbacks :preflight do
-      puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
-      run('bundle install', silent)
-      remove_file("public/index.html", silent)
-    end
+    run_callbacks :preflight
   end
 
   def launch!
@@ -64,9 +60,8 @@ class RailRocket
 
   def remote_template(source, destination, bind)
     render = open(source).read
-    require 'pry'
-    binding.pry
     data = ERB.new(render, nil, '-').result(bind)
+    data.gsub!(/REMOVE\n/,'')
     create_file destination, data
   end
 
@@ -89,17 +84,17 @@ class RailRocket
   module Git
 
     def self.extended(base)
-      base.class.set_callback :preflight, :before, :git_preflight
-      base.class.set_callback :postflight, :after, :git_postflight
+      base.class.set_callback :preflight, :before, :git_preflight_before
+      base.class.set_callback :postflight, :after, :git_postflight_after
     end
 
-    def git_preflight
+    def git_preflight_before
       if yes?("\nInitialize a new git repository? (y|n)\n\n")
         engines << :git
       end
     end
 
-    def git_postflight
+    def git_postflight_after
       if engines.include?(:git)
         git :init
         run('git add .')
@@ -115,12 +110,19 @@ class RailRocket
   module Gemfile
 
     def self.extended(base)
-      base.class.set_callback :preflight, :before, :gemfile_preflight
+      base.class.set_callback :preflight, :before, :gemfile_preflight_before
+      base.class.set_callback :preflight, :after, :gemfile_preflight_after
     end
 
-    def gemfile_preflight
+    def gemfile_preflight_before
       remove_file("Gemfile", silent)
-      get(rocket('templates/gemfiles/default'), "Gemfile", silent)
+      remote_template(rocket('templates/gemfiles/default'), "Gemfile", binding)
+    end
+
+    def gemfile_preflight_after
+      puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
+      run('bundle install', silent)
+      remove_file("public/index.html", silent)
     end
   end
 end
@@ -131,10 +133,10 @@ class RailRocket
   module Rspec
 
     def self.extended(base)
-      base.class.set_callback :launcher, :before, :rspec_launcher
+      base.class.set_callback :launcher, :before, :rspec_launcher_before
     end
 
-    def rspec_launcher
+    def rspec_launcher_before
       remove_file("test")
       generate("rspec:install")
     end
@@ -148,10 +150,10 @@ class RailRocket
     DATABASES = [:mongo, :postgres]
 
     def self.extended(base)
-      base.class.set_callback :preflight, :before, :database_preflight
+      base.class.set_callback :preflight, :before, :database_preflight_before
     end
 
-    def database_preflight
+    def database_preflight_before
       question = "\nWhat database would you like to use? (1|2)\n\n"
       answer1 = ask_tab(1) + "1) Mongoid\n"
       answer2 = ask_tab(1) + "2) Postgres\n\n"
@@ -180,15 +182,10 @@ class RailRocket
 
     def self.extended(base)
       base.engines << :postgres
-      base.postgres_gemfile
-      base.class.set_callback :launcher, :before, :postgres_launcher
+      base.class.set_callback :launcher, :before, :postgres_launcher_before
     end
 
-    def postgres_gemfile
-      gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'pg'", silent)
-    end
-
-    def postgres_launcher
+    def postgres_launcher_before
       source = rocket('templates/database/postgres/database.yml.tt')
       destination = 'config/database.yml'
       app_name = self.app_path
@@ -205,14 +202,14 @@ class RailRocket
     def self.extended(base)
       base.engines << :mongo
       base.mongo_gemfile
-      base.class.set_callback :launcher, :before, :mongo_launcher
+      base.class.set_callback :launcher, :before, :mongo_launcher_before
     end
 
     def mongo_gemfile
       gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", silent)
     end
 
-    def mongo_launcher
+    def mongo_launcher_before
       generate('mongoid:config')
 
       app_requires = <<-END.strip_heredoc.chomp
@@ -246,10 +243,10 @@ class RailRocket
   module Configatron
 
     def self.extended(base)
-      base.class.set_callback :launcher, :before, :configatron_launcher
+      base.class.set_callback :launcher, :before, :configatron_launcher_before
     end
 
-    def configatron_launcher
+    def configatron_launcher_before
       generate("configatron:install")
     end
   end
@@ -261,20 +258,17 @@ class RailRocket
   module Bootstrap
 
     def self.extended(base)
-      base.class.set_callback :preflight, :before, :bootstrap_preflight
-      base.class.set_callback :launcher, :before, :bootstrap_launcher
+      base.class.set_callback :preflight, :before, :bootstrap_preflight_before
     end
 
-    def bootstrap_preflight
+    def bootstrap_preflight_before
       if yes?("\nWould you like to install bootsrap-sass? (y|n)\n\n")
         engines << :bootstrap
       end
     end
 
-    def bootstrap_launcher
-      if engines.include?(:bootstrap)
-        gsub_file("Gemfile", /'uglifier'/, "'uglifier'\n  gem 'bootstrap-sass'")
-      end
+    define_method "bootstrap?" do
+      engines.include(:bootstrap)
     end
   end
 end
