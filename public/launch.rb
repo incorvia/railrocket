@@ -200,7 +200,7 @@ class RailRocket
   end
 end
 
-# <------------------------[ postgres ]---------------------------->
+# <------------------------[ postgres ]--------------------------->
 
 class RailRocket
   module Postgres
@@ -213,7 +213,7 @@ class RailRocket
   end
 end
 
-# <------------------------[ rspec ]------------------------------->
+# <------------------------[ rspec ]------------------------------>
 
 class RailRocket
   module Rspec
@@ -232,11 +232,11 @@ class RailRocket
   end
 end
 
-# <------------------------[ railrocket ]-------------------------->
+# <------------------------[ railrocket ]------------------------->
 
 rocket = RailRocket.new(self)
 
-# <------------------------[ rocketfuel ]-------------------------->
+# <------------------------[ rocketfuel ]------------------------->
 
 rocket.extend(RailRocket::Git)
 rocket.extend(RailRocket::Gemfile)
@@ -246,14 +246,14 @@ rocket.extend(RailRocket::Configatron)
 rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
 
-# <------------------------[ preflight ]--------------------------->
+# <------------------------[ preflight ]-------------------------->
 
 rocket.welcome!
 rocket.git_preflight
 rocket.database_preflight
 rocket.bootstrap_preflight
 
-# <------------------------[ launch ]------------------------------>
+# <------------------------[ launch ]----------------------------->
 
 rocket.gemfile_launch
 rocket.mongo_launch       if rocket.mongo?
