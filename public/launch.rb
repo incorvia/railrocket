@@ -58,11 +58,9 @@ class RailRocket
     run_callbacks :postflight
   end
 
-  def remote_template(source, destination, bind)
+  def remote_template(source, destination)
     render = open(source).read
-    require 'pry'
-    binding.pry
-    data = ERB.new(render, nil, '-').result(bind)
+    data = ERB.new(render, nil, '-').result(binding)
     data.gsub!(/REMOVE\n/,'')
     create_file destination, data
   end
@@ -117,7 +115,7 @@ class RailRocket
 
     def gemfile_preflight_after
       remove_file("Gemfile", silent)
-      remote_template(rocket('templates/gemfiles/default.tt'), "Gemfile", binding)
+      remote_template(rocket('templates/gemfiles/default.tt'), "Gemfile")
       puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
       run('bundle install', silent)
       remove_file("public/index.html", silent)
@@ -187,7 +185,7 @@ class RailRocket
       source = rocket('templates/database/postgres/database.yml.tt')
       destination = 'config/database.yml'
       app_name = self.app_path
-      remote_template(source, destination, binding)
+      remote_template(source, destination)
     end
   end
 end

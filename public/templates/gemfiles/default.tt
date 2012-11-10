@@ -5,13 +5,14 @@ gem 'jquery-rails'
 gem 'thin'
 gem 'configatron'
 <%= mongo? ? "gem 'mongo'" : "REMOVE" %>
+<%= mongo? ? "gem 'bson_ext'" : "REMOVE" %>
 <%= postgres? ? "gem 'pg'" : "REMOVE" %>
 
 group :assets do
   gem 'sass-rails'
   gem 'coffee-rails'
   gem 'uglifier'
-<%= bootstrap? ? "gem 'bootstrap-sass'" : "REMOVE" %>
+<%= bootstrap? ? "  gem 'bootstrap-sass'" : "REMOVE" %>
 end
 
 group :development, :test do
