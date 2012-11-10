@@ -40,22 +40,8 @@ class RailRocket
     end
   end
 
-  define_callbacks :preflight, :launcher, :postflight
-
   def welcome!
     puts open(rocket('welcome.rb')).read
-  end
-
-  def preflight!
-    run_callbacks :preflight
-  end
-
-  def launch!
-    run_callbacks :launcher
-  end
-
-  def postflight!
-    run_callbacks :postflight
   end
 
   def remote_template(source, destination)
@@ -90,179 +76,31 @@ class RailRocket
   end
 end
 
-# <-----------------------------[ Git ]----------------------------->
+# <---------------------------[ application ]-------------------------->
 
 class RailRocket
-  module Git
+  module Application
 
-    def self.extended(base)
-      base.class.set_callback :preflight, :before, :git_preflight_before
-      base.class.set_callback :postflight, :after, :git_postflight_after
+    def application_launch
+      application_config_file("config/application.rb")
+      application_config_file("config/environments/development.rb", ".tt")
+      application_config_file("config/environments/test.rb", ".tt")
     end
 
-    def git_preflight_before
-      if yes?("\nInitialize a new git repository? (y|n)\n\n")
-        engines << :git
-      end
-    end
-
-    def git_postflight_after
-      if engines.include?(:git)
-        git :init
-        run('git add .')
-        run('git commit -m "initial commit"')
-      end
-    end
-  end
-end
-
-# <----------------------------[ Gemfile ]--------------------------->
-
-class RailRocket
-  module Gemfile
-
-    def self.extended(base)
-      base.class.set_callback :preflight, :after, :gemfile_preflight_after
-    end
-
-    def gemfile_preflight_after
-      remove_file("Gemfile", silent)
-      remote_template(rocket('templates/gemfiles/gemfile'), "Gemfile")
-      puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
-      run('bundle install', silent)
-      remove_file("public/index.html", silent)
-    end
-  end
-end
-
-# <-----------------------------[ RSpec ]---------------------------->
-
-class RailRocket
-  module Rspec
-
-    def self.extended(base)
-      base.class.set_callback :preflight, :after, :rspec_preflight_after
-      base.options["skip_test_unit"] = true
-    end
-
-    def rspec_preflight_after
-      remove_file("test")
-      generate("rspec:install")
-      remove_file("spec/spec_helper.rb")
-      remote_template(rocket('templates/rspec/spec_helper.rb'), "spec/spec_helper.rb")
-    end
-  end
-end
-
-# <----------------------------[ Database ]-------------------------->
-
-class RailRocket
-  module Database
-    DATABASES = [:mongo, :postgres]
-
-    def self.extended(base)
-      base.class.set_callback :preflight, :before, :database_preflight_before
-      base.class.set_callback :preflight, :after, :database_preflight_after
-    end
-
-    def database_preflight_before
-      question = "\nWhat database would you like to use? (1|2)\n\n"
-      answer1 = ask_tab + "1) Mongoid\n"
-      answer2 = ask_tab + "2) Postgres\n\n"
-
-      case ask(question + answer1 + answer2).to_i
-      when 1
-        self.extend(RailRocket::Mongo)
-      when 2
-        self.extend(RailRocket::Postgres)
-      end
-      remove_file("config/database.yml", silent)
-    end
-
-    def database_preflight_after
-      database_config_file("config/application.rb")
-      database_config_file("config/environments/development.rb", ".tt")
-      database_config_file("config/environments/test.rb", ".tt")
-    end
-
-    def database_config_file(path, destination_ext = nil)
+    def application_config_file(path, destination_ext = nil)
       remove_file(path, silent)
       source = master_templates("#{path}#{destination_ext if destination_ext}")
       remote_template(source, path)
     end
-
-    DATABASES.each do |db|
-      define_method "#{db}?" do
-        self.engines.include?(db)
-      end
-    end
   end
 end
-
-# <----------------------------[ Postgres ]-------------------------->
-
-class RailRocket
-  module Postgres
-
-    def self.extended(base)
-      base.engines << :postgres
-      base.class.set_callback :launcher, :before, :postgres_launcher_before
-    end
-
-    def postgres_launcher_before
-      source = master_templates('config/databases/postgresql.yml')
-      destination = 'config/database.yml'
-      remote_template(source, destination)
-    end
-  end
-end
-
-# <------------------------------[ Mongo ]-------------------------->
-
-class RailRocket
-  module Mongo
-
-    def self.extended(base)
-      base.engines << :mongo
-      base.options["skip_active_record"] = true
-      base.class.set_callback :launcher, :before, :mongo_launcher_before
-    end
-
-    def mongo_launcher_before
-      require 'pry'
-      binding.pry
-      generate('mongoid:config')
-      gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans")
-    end
-  end
-end
-
-# <--------------------------[ configatron ]------------------------->
-
-class RailRocket
-  module Configatron
-
-    def self.extended(base)
-      base.class.set_callback :preflight, :after, :configatron_preflight_after
-    end
-
-    def configatron_preflight_after
-      generate("configatron:install")
-    end
-  end
-end
-
 
 # <----------------------------[ bootstrap ]------------------------->
 
 class RailRocket
   module Bootstrap
 
-    def self.extended(base)
-      base.class.set_callback :preflight, :before, :bootstrap_preflight_before
-    end
-
-    def bootstrap_preflight_before
+    def bootstrap_preflight
       if yes?("\nWould you like to install bootsrap-sass? (y|n)\n\n")
         engines << :bootstrap
       end
@@ -274,22 +112,154 @@ class RailRocket
   end
 end
 
-# <---------------------------[ RailRocket ]------------------------->
+# <--------------------------[ configatron ]------------------------->
+
+class RailRocket
+  module Configatron
+
+    def configatron_launch
+      generate("configatron:install")
+    end
+  end
+end
+
+# <----------------------------[ database ]-------------------------->
+
+class RailRocket
+  module Database
+    DATABASES = [:mongo, :postgres]
+
+    def database_preflight
+      question = "\nWhat database would you like to use? (1|2)\n\n"
+      answer1 = ask_tab + "1) Mongoid\n"
+      answer2 = ask_tab + "2) Postgres\n\n"
+
+      case ask(question + answer1 + answer2).to_i
+      when 1
+        self.extend(RailRocket::Mongo)
+        engines << :mongo
+        options["skip_active_record"] = true
+      when 2
+        self.extend(RailRocket::Postgres)
+        engines << :postgres
+      end
+      remove_file("config/database.yml", silent)
+    end
+
+    DATABASES.each do |db|
+      define_method "#{db}?" do
+        self.engines.include?(db)
+      end
+    end
+  end
+end
+
+# <----------------------------[ gemfile ]--------------------------->
+
+class RailRocket
+  module Gemfile
+
+    def gemfile_launch
+      remove_file("Gemfile", silent)
+      remote_template(rocket('templates/gemfiles/gemfile'), "Gemfile")
+      puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
+      run('bundle install', silent)
+      remove_file("public/index.html", silent)
+    end
+  end
+end
+
+# <-----------------------------[ git ]----------------------------->
+
+class RailRocket
+  module Git
+
+    def git_preflight
+      if yes?("\nInitialize a new git repository? (y|n)\n\n")
+        engines << :git
+      end
+    end
+
+    def git_launch
+      if engines.include?(:git)
+        git :init
+        run('git add .')
+        run('git commit -m "initial commit"')
+      end
+    end
+  end
+end
+
+# <------------------------------[ mongo ]-------------------------->
+
+class RailRocket
+  module Mongo
+
+    def mongo_launch
+      generate('mongoid:config')
+    end
+  end
+end
+
+# <----------------------------[ postgres ]-------------------------->
+
+class RailRocket
+  module Postgres
+
+    def postgres_launch
+      source = master_templates('config/databases/postgresql.yml')
+      destination = 'config/database.yml'
+      remote_template(source, destination)
+    end
+  end
+end
+
+# <-----------------------------[ rspec ]---------------------------->
+
+class RailRocket
+  module Rspec
+
+    def self.extended(base)
+      base.options["skip_test_unit"] = true
+    end
+
+    def rspec_launch
+      remove_file("test")
+      generate("rspec:install")
+      remove_file("spec/spec_helper.rb")
+      remote_template(rocket('templates/rspec/spec_helper.rb'), "spec/spec_helper.rb")
+      gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans") if mongo?
+    end
+  end
+end
+
+# <---------------------------[ railrocket ]------------------------->
 
 rocket = RailRocket.new(self)
 
-# <---------------------------[ Add Modules ]------------------------>
+# <---------------------------[ rocket fuel ]------------------------>
 
 rocket.extend(RailRocket::Git)
-rocket.extend(RailRocket::Configatron)
+rocket.extend(RailRocket::Gemfile)
 rocket.extend(RailRocket::Rspec)
 rocket.extend(RailRocket::Database)
-rocket.extend(RailRocket::Gemfile)
+rocket.extend(RailRocket::Configatron)
+rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
 
-# <-----------------------------[ Launch ]--------------------------->
+# <-----------------------------[ preflight ]------------------------>
 
 rocket.welcome!
-rocket.preflight!
-rocket.launch!
-rocket.postflight!
+rocket.git_preflight
+rocket.database_preflight
+rocket.bootstrap_preflight
+
+# <-------------------------------[ launch ]------------------------->
+
+rocket.gemfile_launch
+rocket.mongo_launch       if rocket.mongo?
+rocket.postgres_launch    if rocket.postgres?
+rocket.rspec_launch
+rocket.configatron_launch
+rocket.application_launch
+rocket.git_launch
