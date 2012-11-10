@@ -246,14 +246,15 @@ rocket.extend(RailRocket::Configatron)
 rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
 
-# <------------------------[ preflight ]---------------------------->
+# <------------------------[ preflight ]--------------------------->
 
 rocket.welcome!
 rocket.git_preflight
 rocket.database_preflight
 rocket.bootstrap_preflight
 
-# <------------------------[ launch ]------------------------------->
+# <------------------------[ launch ]------------------------------>
+
 
 rocket.gemfile_launch
 rocket.mongo_launch       if rocket.mongo?
