@@ -72,6 +72,10 @@ class RailRocket
     "http://www.railrocket.me/#{url}"
   end
 
+  def master(url)
+    "https://github.com/rails/rails/blob/master/#{url}"
+  end
+
   def silent
     { verbose: false }
   end
@@ -114,7 +118,7 @@ class RailRocket
 
     def gemfile_preflight_after
       remove_file("Gemfile", silent)
-      remote_template(rocket('templates/gemfiles/default.tt'), "Gemfile")
+      remote_template(rocket('templates/gemfiles/gemfile'), "Gemfile")
       puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
       run('bundle install', silent)
       remove_file("public/index.html", silent)
@@ -134,6 +138,8 @@ class RailRocket
     def rspec_launcher_before
       remove_file("test")
       generate("rspec:install")
+      remove_file("spec/spec_helper.rb")
+      remote_template(rocket('templates/rspec/spec_helper.rb'), "spec/spec_helper.rb")
     end
   end
 end
@@ -181,7 +187,7 @@ class RailRocket
     end
 
     def postgres_launcher_before
-      source = rocket('templates/database/postgres/database.yml.tt')
+      source = master('railties/lib/rails/generators/rails/app/templates/config/databases/postgresql.yml')
       destination = 'config/database.yml'
       app_name = self.app_path
       remote_template(source, destination)
