@@ -44,8 +44,6 @@ class RailRocket
 
   def remote_template(source, destination)
     render = open(source).read
-    require 'pry'
-    binding.pry
     data = ERB.new(render, nil, '-').result(binding)
     data.gsub!(/REMOVE\n/,'')
     create_file(destination, data, silent)
