@@ -42,8 +42,7 @@ class RailRocket
   define_callbacks :preflight, :launcher, :postflight
 
   def welcome!
-    render = open(rocket('welcome.rb')).read
-    puts render
+    puts open(rocket('welcome.rb')).read
   end
 
   def preflight!
