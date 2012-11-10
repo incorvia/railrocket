@@ -29,6 +29,7 @@ class RailRocket
   def initialize(generator)
     @generator = generator
     @engines = []
+    unfreeze_options
   end
 
   def method_missing(method_name, *args, &block)
@@ -64,6 +65,10 @@ class RailRocket
     create_file(destination, data, silent)
   end
 
+  def unfreeze_options
+    self.options = self.options.dup
+  end
+
   def ask_tab(tabs = 1)
     "     " * tabs
   end
@@ -72,8 +77,12 @@ class RailRocket
     "http://www.railrocket.me/#{url}"
   end
 
-  def master(url)
-    "https://raw.github.com/rails/rails/master/#{url}"
+  def rails
+    "https://raw.github.com/rails/rails/master"
+  end
+
+  def master_templates(url)
+    "#{rails}/railties/lib/rails/generators/rails/app/templates/#{url}"
   end
 
   def silent
@@ -132,10 +141,11 @@ class RailRocket
   module Rspec
 
     def self.extended(base)
-      base.class.set_callback :launcher, :before, :rspec_launcher_before
+      base.class.set_callback :preflight, :after, :rspec_preflight_after
+      base.options["skip_test_unit"] = true
     end
 
-    def rspec_launcher_before
+    def rspec_preflight_after
       remove_file("test")
       generate("rspec:install")
       remove_file("spec/spec_helper.rb")
@@ -152,6 +162,7 @@ class RailRocket
 
     def self.extended(base)
       base.class.set_callback :preflight, :before, :database_preflight_before
+      base.class.set_callback :preflight, :after, :database_preflight_after
     end
 
     def database_preflight_before
@@ -165,7 +176,19 @@ class RailRocket
       when 2
         self.extend(RailRocket::Postgres)
       end
-      remove_file("config/database.yml")
+      remove_file("config/database.yml", silent)
+    end
+
+    def database_preflight_after
+      database_config_file("config/application.rb")
+      database_config_file("config/environments/development.rb", ".tt")
+      database_config_file("config/environments/test.rb", ".tt")
+    end
+
+    def database_config_file(path, destination_ext = nil)
+      remove_file(path, silent)
+      source = master_templates("#{path}#{destination_ext if destination_ext}")
+      remote_template(source, path)
     end
 
     DATABASES.each do |db|
@@ -187,9 +210,8 @@ class RailRocket
     end
 
     def postgres_launcher_before
-      source = master('railties/lib/rails/generators/rails/app/templates/config/databases/postgresql.yml')
+      source = master_templates('config/databases/postgresql.yml')
       destination = 'config/database.yml'
-      app_name = self.app_path
       remote_template(source, destination)
     end
   end
@@ -202,38 +224,13 @@ class RailRocket
 
     def self.extended(base)
       base.engines << :mongo
-      base.mongo_gemfile
+      base.options["skip_active_record"] = true
       base.class.set_callback :launcher, :before, :mongo_launcher_before
-    end
-
-    def mongo_gemfile
-      gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", silent)
     end
 
     def mongo_launcher_before
       generate('mongoid:config')
-
-      app_requires = <<-END.strip_heredoc.chomp
-        require "action_controller/railtie"
-        require "action_mailer/railtie"
-        require "active_resource/railtie"
-        require "sprockets/railtie"
-      END
-
-      gsub_file("config/application.rb", /require 'rails\/all'/, app_requires)
       gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans")
-
-      mongo_active_record_config([
-        "config/application.rb",
-        "config/environments/development.rb",
-        "config/environments/test.rb",
-      ])
-    end
-
-    def mongo_active_record_config(files)
-      files.each do |file|
-        gsub_file(file, /config\.active_record/, "# config.active_record")
-      end
     end
   end
 end
@@ -244,14 +241,15 @@ class RailRocket
   module Configatron
 
     def self.extended(base)
-      base.class.set_callback :launcher, :before, :configatron_launcher_before
+      base.class.set_callback :preflight, :after, :configatron_preflight_after
     end
 
-    def configatron_launcher_before
+    def configatron_preflight_after
       generate("configatron:install")
     end
   end
 end
+
 
 # <----------------------------[ bootstrap ]------------------------->
 
@@ -281,10 +279,10 @@ rocket = RailRocket.new(self)
 # <---------------------------[ Add Modules ]------------------------>
 
 rocket.extend(RailRocket::Git)
-rocket.extend(RailRocket::Gemfile)
-rocket.extend(RailRocket::Rspec)
 rocket.extend(RailRocket::Configatron)
+rocket.extend(RailRocket::Rspec)
 rocket.extend(RailRocket::Database)
+rocket.extend(RailRocket::Gemfile)
 rocket.extend(RailRocket::Bootstrap)
 
 # <-----------------------------[ Launch ]--------------------------->
