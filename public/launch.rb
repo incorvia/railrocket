@@ -64,7 +64,7 @@ class RailRocket
     create_file(destination, data, silent)
   end
 
-  def ask_tab(tabs=1)
+  def ask_tab(tabs = 1)
     "     " * tabs
   end
 
