@@ -93,7 +93,6 @@ class RailRocket
   end
 end
 
-
 # <------------------------[ bootstrap ]-------------------------->
 
 class RailRocket
@@ -254,7 +253,6 @@ rocket.database_preflight
 rocket.bootstrap_preflight
 
 # <------------------------[ launch ]------------------------------>
-
 
 rocket.gemfile_launch
 rocket.mongo_launch       if rocket.mongo?
