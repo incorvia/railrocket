@@ -62,7 +62,7 @@ class RailRocket
     render = open(source).read
     data = ERB.new(render, nil, '-').result(binding)
     data.gsub!(/REMOVE\n/,'')
-    create_file destination, data
+    create_file(destination, data, silent)
   end
 
   def ask_tab(tabs)
