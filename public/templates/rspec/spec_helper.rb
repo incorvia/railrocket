@@ -32,10 +32,7 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = "random"
-  <% if mongo? %>
-  " "
+<% if mongo? %>
   config.before(:each) { Mongoid.purge! }
-  <% else %>
-   REMOVE
-  <% end %>
+<% end %>
 end
