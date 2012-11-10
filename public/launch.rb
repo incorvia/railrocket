@@ -64,7 +64,7 @@ class RailRocket
     create_file(destination, data, silent)
   end
 
-  def ask_tab(tabs)
+  def ask_tab(tabs=1)
     "     " * tabs
   end
 
@@ -150,8 +150,8 @@ class RailRocket
 
     def database_preflight_before
       question = "\nWhat database would you like to use? (1|2)\n\n"
-      answer1 = ask_tab(1) + "1) Mongoid\n"
-      answer2 = ask_tab(1) + "2) Postgres\n\n"
+      answer1 = ask_tab + "1) Mongoid\n"
+      answer2 = ask_tab + "2) Postgres\n\n"
 
       case ask(question + answer1 + answer2).to_i
       when 1
