@@ -5,7 +5,7 @@ gem 'jquery-rails'
 gem 'thin'
 gem 'configatron'
 <%= mongo? ? "gem 'mongo'" : "REMOVE" %>
-<%= postgres? ? "gem 'postgres'" : "REMOVE" %>
+<%= postgres? ? "gem 'pg'" : "REMOVE" %>
 
 group :assets do
   gem 'sass-rails'

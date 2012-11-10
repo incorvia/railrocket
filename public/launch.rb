@@ -60,6 +60,8 @@ class RailRocket
 
   def remote_template(source, destination, bind)
     render = open(source).read
+    require 'pry'
+    binding.pry
     data = ERB.new(render, nil, '-').result(bind)
     data.gsub!(/REMOVE\n/,'')
     create_file destination, data
@@ -110,16 +112,12 @@ class RailRocket
   module Gemfile
 
     def self.extended(base)
-      base.class.set_callback :preflight, :before, :gemfile_preflight_before
       base.class.set_callback :preflight, :after, :gemfile_preflight_after
     end
 
-    def gemfile_preflight_before
-      remove_file("Gemfile", silent)
-      remote_template(rocket('templates/gemfiles/default'), "Gemfile", binding)
-    end
-
     def gemfile_preflight_after
+      remove_file("Gemfile", silent)
+      remote_template(rocket('templates/gemfiles/default.tt'), "Gemfile", binding)
       puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
       run('bundle install', silent)
       remove_file("public/index.html", silent)
@@ -268,7 +266,7 @@ class RailRocket
     end
 
     define_method "bootstrap?" do
-      engines.include(:bootstrap)
+      engines.include?(:bootstrap)
     end
   end
 end
