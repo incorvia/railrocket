@@ -229,6 +229,8 @@ class RailRocket
     end
 
     def mongo_launcher_before
+      require 'pry'
+      binding.pry
       generate('mongoid:config')
       gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans")
     end

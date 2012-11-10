@@ -4,7 +4,7 @@ gem 'rails'
 gem 'jquery-rails'
 gem 'thin'
 gem 'configatron'
-<%= mongo? ? "gem 'mongo'" : "REMOVE" %>
+<%= mongo? ? "gem 'mongoid'" : "REMOVE" %>
 <%= mongo? ? "gem 'bson_ext'" : "REMOVE" %>
 <%= postgres? ? "gem 'pg'" : "REMOVE" %>
 
