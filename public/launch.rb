@@ -64,6 +64,8 @@ class RailRocket
 
   def remote_template(source, destination, bind)
     render = open(source).read
+    require 'pry'
+    binding.pry
     data = ERB.new(render, nil, '-').result(bind)
     create_file destination, data
   end
@@ -147,7 +149,6 @@ class RailRocket
 
     def self.extended(base)
       base.class.set_callback :preflight, :before, :database_preflight
-      base.class.set_callback :launcher, :before, :database_launcher
     end
 
     def database_preflight
@@ -157,35 +158,58 @@ class RailRocket
 
       case ask(question + answer1 + answer2).to_i
       when 1
-        engines << :mongo
+        self.extend(RailRocket::Mongo)
       when 2
-        engines << :postgres
+        self.extend(RailRocket::Postgres)
       end
-      database_gemfile
-    end
-
-    def database_gemfile
-      if mongo?
-        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", silent)
-      elsif postgres?
-        gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'pg'", silent)
-      end
-    end
-
-    def database_launcher
       remove_file("config/database.yml")
-
-      if mongo?
-        mongo_launcher
-      elsif postgres?
-        postgres_launcher
-      end
     end
 
     DATABASES.each do |db|
       define_method "#{db}?" do
         self.engines.include?(db)
       end
+    end
+  end
+end
+
+# <----------------------------[ Postgres ]-------------------------->
+
+class RailRocket
+  module Postgres
+
+    def self.extended(base)
+      base.engines << :postgres
+      base.postgres_gemfile
+      base.class.set_callback :launcher, :before, :postgres_launcher
+    end
+
+    def postgres_gemfile
+      gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'pg'", silent)
+    end
+
+    def postgres_launcher
+      source = rocket('templates/database/postgres/database.yml.tt')
+      destination = 'config/database.yml'
+      app_name = self.app_path
+      remote_template(source, destination, binding)
+    end
+  end
+end
+
+# <------------------------------[ Mongo ]-------------------------->
+
+class RailRocket
+  module Mongo
+
+    def self.extended(base)
+      base.engines << :mongo
+      base.mongo_gemfile
+      base.class.set_callback :launcher, :before, :mongo_launcher
+    end
+
+    def mongo_gemfile
+      gsub_file("Gemfile", /gem 'sqlite3'/, "gem 'mongoid'", silent)
     end
 
     def mongo_launcher
@@ -201,21 +225,14 @@ class RailRocket
       gsub_file("config/application.rb", /require 'rails\/all'/, app_requires)
       gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans")
 
-      comment_active_record_config([
+      mongo_active_record_config([
         "config/application.rb",
         "config/environments/development.rb",
         "config/environments/test.rb",
       ])
     end
 
-    def postgres_launcher
-      source = rocket('templates/database/postgres/database.yml.tt')
-      destination = 'config/database.yml'
-      app_name = self.app_path
-      remote_template(source, destination, binding)
-    end
-
-    def comment_active_record_config(files)
+    def mongo_active_record_config(files)
       files.each do |file|
         gsub_file(file, /config\.active_record/, "# config.active_record")
       end
