@@ -50,6 +50,7 @@ class RailRocket
     run_callbacks :preflight do
       puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
       run('bundle install', silent)
+      remove_file("public/index.html", silent)
     end
   end
 
@@ -231,8 +232,32 @@ class RailRocket
       base.class.set_callback :launcher, :before, :configatron_launcher
     end
 
-    def rspec_launcher
+    def configatron_launcher
       generate("configatron:install")
+    end
+  end
+end
+
+# <----------------------------[ bootstrap ]------------------------->
+
+class RailRocket
+  module Bootstrap
+
+    def self.extended(base)
+      base.class.set_callback :preflight, :before, :bootstrap_preflight
+      base.class.set_callback :launcher, :before, :bootstrap_launcher
+    end
+
+    def bootstrap_preflight
+      if yes?("\nWould you like to install bootsrap-sass? (y|n)\n\n")
+        engines << :bootstrap
+      end
+    end
+
+    def bootstrap_launcher
+      if engines.include?(:bootstrap)
+        gsub_file("Gemfile", /'uglifier'/, "'uglifier'\n  gem 'bootstrap-sass'")
+      end
     end
   end
 end
@@ -248,6 +273,7 @@ rocket.extend(RailRocket::Gemfile)
 rocket.extend(RailRocket::Rspec)
 rocket.extend(RailRocket::Configatron)
 rocket.extend(RailRocket::Database)
+rocket.extend(RailRocket::Bootstrap)
 
 # <-----------------------------[ Launch ]--------------------------->
 
