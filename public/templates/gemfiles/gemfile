@@ -12,7 +12,7 @@ group :assets do
   gem 'sass-rails'
   gem 'coffee-rails'
   gem 'uglifier'
-<%= bootstrap? ? "  gem 'bootstrap-sass'" : "REMOVE" %>
+<%= "  gem 'bootstrap-sass'" if bootstrap? -%>
 end
 
 group :development, :test do
