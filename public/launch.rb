@@ -1,4 +1,4 @@
-# <-----------------[ Copyright (c) 2012 Kevin Incorvia ]--------------->
+# <------------------[ Copyright (c) 2012 Kevin Incorvia ]-------------->
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -20,7 +20,7 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-# <-------------------------[ RailRocket Class ]------------------------>
+# <---------------------------[ RailRocket Class ]---------------------->
 
 class RailRocket
   attr_accessor :generator, :engines
@@ -265,7 +265,7 @@ end
 
 rocket = RailRocket.new(self)
 
-# <---------------------------[ rocketfuel ]---------------------------->
+# <---------------------------[ engines ]------------------------------->
 
 rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
