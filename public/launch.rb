@@ -88,12 +88,19 @@ class RailRocket
       application_config_file("config/application.rb")
       application_config_file("config/environments/development.rb", ".tt")
       application_config_file("config/environments/test.rb", ".tt")
+      application_scss
     end
 
     def application_config_file(path, destination_ext = nil)
       remove_file(path, silent)
       source = master_templates("#{path}#{destination_ext if destination_ext}")
       remote_template(source, path)
+    end
+
+    def application_scss
+      path = "app/assets/stylesheets/application.css"
+      copy_file(path, "#{path}.scss")
+      remove_file(path)
     end
   end
 end
@@ -104,8 +111,14 @@ class RailRocket
   module Bootstrap
 
     def bootstrap_preflight
-      if yes?("\nWould you like to install bootsrap-sass? (y|n)\n\n")
+      if yes?("\nWould you like to install Twitter Bootstrap? (y|n)\n\n")
         engines << :bootstrap
+      end
+    end
+
+    def bootstrap_launch
+      append_file 'app/assets/stylesheets/application.css.scss' do
+        "\n@import \"bootstrap\";"
       end
     end
 
@@ -279,5 +292,6 @@ rocket.postgres_launch    if rocket.postgres?
 rocket.rspec_launch
 rocket.configatron_launch
 rocket.application_launch
+rocket.bootstrap_launch   if rocket.bootstrap?
 rocket.git_launch
 rocket.guard_launch

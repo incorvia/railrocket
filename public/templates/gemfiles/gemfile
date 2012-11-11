@@ -20,5 +20,7 @@ group :development, :test do
   gem 'timecop'
   gem 'factory_girl_rails'
   gem 'guard-rspec'
+  gem 'terminal-notifier-guard'
+  gem 'rb-fsevent'
   gem 'rspec-rails'
 end
