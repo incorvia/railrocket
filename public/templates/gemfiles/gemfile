@@ -4,9 +4,9 @@ gem 'rails'
 gem 'jquery-rails'
 gem 'thin'
 gem 'configatron'
-<%= mongo? ? "gem 'mongoid'" : "REMOVE" %>
-<%= mongo? ? "gem 'bson_ext'" : "REMOVE" %>
-<%= postgres? ? "gem 'pg'" : "REMOVE" %>
+<%= "gem 'mongoid'" if mongo? -%>
+<%= "gem 'bson_ext'" if mongo? -%>
+<%= "gem 'pg'" if postgres? -%>
 
 group :assets do
   gem 'sass-rails'
