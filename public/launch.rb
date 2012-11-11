@@ -63,10 +63,10 @@ class RailRocket
   end
 
   def rails
-    "#{git}/rails/rails/master"
+    "#{raw_git}/rails/rails/master"
   end
 
-  def git
+  def raw_git
     "https://raw.github.com"
   end
 
@@ -199,8 +199,7 @@ class RailRocket
   module Guard
 
     def guard_launch
-      run("guard init rspec", silent)
-      f = "#{git}/guard/guard-rspec/master/lib/guard/rspec/templates/Guardfile"
+      f = "#{raw_git}/guard/guard-rspec/master/lib/guard/rspec/templates/Guardfile"
       remote_template(f, 'Guardfile')
     end
   end
