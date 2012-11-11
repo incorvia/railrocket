@@ -63,7 +63,11 @@ class RailRocket
   end
 
   def rails
-    "https://raw.github.com/rails/rails/master"
+    "#{git}/rails/rails/master"
+  end
+
+  def git
+    "https://raw.github.com"
   end
 
   def master_templates(url)
@@ -189,6 +193,20 @@ class RailRocket
   end
 end
 
+# <---------------------------[ guard ]--------------------------------->
+
+class RailRocket
+  module Guard
+
+    def guard_launch
+      run("guard init rspec", silent)
+      f = "#{git}/guard/guard-rspec/master/lib/guard/rspec/templates/Guardfile"
+      remote_template(f, 'Guardfile')
+    end
+  end
+end
+
+
 # <---------------------------[ mongo ]--------------------------------->
 
 class RailRocket
@@ -238,13 +256,14 @@ rocket = RailRocket.new(self)
 
 # <---------------------------[ rocketfuel ]---------------------------->
 
-rocket.extend(RailRocket::Git)
-rocket.extend(RailRocket::Gemfile)
-rocket.extend(RailRocket::Rspec)
-rocket.extend(RailRocket::Database)
-rocket.extend(RailRocket::Configatron)
 rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
+rocket.extend(RailRocket::Configatron)
+rocket.extend(RailRocket::Database)
+rocket.extend(RailRocket::Gemfile)
+rocket.extend(RailRocket::Git)
+rocket.extend(RailRocket::Guard)
+rocket.extend(RailRocket::Rspec)
 
 # <---------------------------[ preflight ]----------------------------->
 
@@ -262,3 +281,4 @@ rocket.rspec_launch
 rocket.configatron_launch
 rocket.application_launch
 rocket.git_launch
+rocket.guard_launch

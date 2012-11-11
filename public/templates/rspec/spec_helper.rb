@@ -9,6 +9,9 @@ require 'rspec/autorun'
 Dir[Rails.root.join("spec/support/**/*.rb")].each {|f| require f}
 
 RSpec.configure do |config|
+  # Factory Girl
+  config.include FactoryGirl::Syntax::Methods
+
   # ## Mock Framework
   #
   # If you prefer to use mocha, flexmock or RR, uncomment the appropriate line:
@@ -32,9 +35,18 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = "random"
-<% if mongo? -%>
 
-  # Purge database before each spec.
-  config.before(:each) { Mongoid.purge! }
-<% end -%>
+  # Global before block
+  config.before(:each) do
+  <% if mongo? -%>
+    Mongoid.purge!
+  <% end -%>
+    Time.zone = 'UTC'
+    Timecop.freeze(DateTime.now)
+  end
+
+  # Global after block
+  config.after(:each) do
+    Timecop.return
+  end
 end

@@ -19,6 +19,6 @@ group :development, :test do
   gem 'vcr'
   gem 'timecop'
   gem 'factory_girl_rails'
-  gem 'guard'
+  gem 'guard-rspec'
   gem 'rspec-rails'
 end
