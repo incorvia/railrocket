@@ -64,7 +64,7 @@ class RailRocket
     end
 
     def rocket(url, type = "rails")
-      "http://www.railrocket.me/templates/#{rails}/#{url}"
+      "http://www.railrocket.me/templates/#{type}/#{url}"
     end
 
     def rails
@@ -285,6 +285,8 @@ rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
 rocket.extend(RailRocket::Configatron)
 rocket.extend(RailRocket::Database)
+rocket.extend(RailRocket::Mongo)
+rocket.extend(RailRocket::Postgres)
 rocket.extend(RailRocket::Gemfile)
 rocket.extend(RailRocket::Git)
 rocket.extend(RailRocket::Guard)
