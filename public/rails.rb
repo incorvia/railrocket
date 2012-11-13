@@ -40,41 +40,48 @@ class RailRocket
   end
 
   def welcome!
-    puts open(rocket('welcome.rb')).read
-  end
-
-  def remote_template(source, destination)
-    render = open(source).read
-    data = ERB.new(render, nil, '-').result(binding)
-    create_file(destination, data, silent)
+    puts open("http://www.railrocket.me/templates/welcome.rb").read
   end
 
   def unfreeze_options
     self.options = self.options.dup
   end
+end
 
-  def ask_tab(tabs = 1)
-    "     " * tabs
-  end
+# <-----------------------------[ helpers ]----------------------------->
 
-  def rocket(url)
-    "http://www.railrocket.me/#{url}"
-  end
+class RailRocket
+  module Helpers
 
-  def rails
-    "#{raw_git}/rails/rails/master"
-  end
+    def remote_template(source, destination)
+      render = open(source).read
+      data = ERB.new(render, nil, '-').result(binding)
+      create_file(destination, data, silent)
+    end
 
-  def raw_git
-    "https://raw.github.com"
-  end
+    def ask_tab(tabs = 1)
+      "     " * tabs
+    end
 
-  def master_templates(url)
-    "#{rails}/railties/lib/rails/generators/rails/app/templates/#{url}"
-  end
+    def rocket(url, type = "rails")
+      "http://www.railrocket.me/templates/#{rails}/#{url}"
+    end
 
-  def silent
-    { verbose: false }
+    def rails
+      "#{raw_git}/rails/rails/master"
+    end
+
+    def raw_git
+      "https://raw.github.com"
+    end
+
+    def master_templates(url)
+      "#{rails}/railties/lib/rails/generators/rails/app/templates/#{url}"
+    end
+
+    def silent
+      { verbose: false }
+    end
   end
 end
 
@@ -116,8 +123,10 @@ class RailRocket
     end
 
     def bootstrap_launch
-      append_file 'app/assets/stylesheets/application.css.scss' do
-        "\n@import \"bootstrap\";"
+      if bootstrap?
+        append_file 'app/assets/stylesheets/application.css.scss' do
+          "\n@import \"bootstrap\";"
+        end
       end
     end
 
@@ -176,7 +185,7 @@ class RailRocket
 
     def gemfile_launch
       remove_file("Gemfile", silent)
-      remote_template(rocket('templates/gemfiles/gemfile'), "Gemfile")
+      remote_template(rocket('gemfiles/gemfile'), "Gemfile")
       puts "\n#{'=' * 17} Running Bundle Install #{'=' * 17}\n\n"
       run('bundle install', silent)
       remove_file("public/index.html", silent)
@@ -224,7 +233,9 @@ class RailRocket
   module Mongo
 
     def mongo_launch
-      generate('mongoid:config')
+      if mongo?
+        generate('mongoid:config')
+      end
     end
   end
 end
@@ -235,9 +246,11 @@ class RailRocket
   module Postgres
 
     def postgres_launch
-      source = master_templates('config/databases/postgresql.yml')
-      destination = 'config/database.yml'
-      remote_template(source, destination)
+      if postgres?
+        source = master_templates('config/databases/postgresql.yml')
+        destination = 'config/database.yml'
+        remote_template(source, destination)
+      end
     end
   end
 end
@@ -255,7 +268,7 @@ class RailRocket
       remove_file("test")
       generate("rspec:install")
       remove_file("spec/spec_helper.rb")
-      remote_template(rocket('templates/rspec/spec_helper.rb'), "spec/spec_helper.rb")
+      remote_template(rocket('rspec/spec_helper.rb'), "spec/spec_helper.rb")
       gsub_file("spec/spec_helper.rb", /config\.use_trans/, "# config.use_trans") if mongo?
     end
   end
@@ -267,6 +280,7 @@ rocket = RailRocket.new(self)
 
 # <---------------------------[ engines ]------------------------------->
 
+rocket.extend(RailRocket::Helpers)
 rocket.extend(RailRocket::Application)
 rocket.extend(RailRocket::Bootstrap)
 rocket.extend(RailRocket::Configatron)
@@ -286,11 +300,11 @@ rocket.bootstrap_preflight
 # <---------------------------[ launch ]-------------------------------->
 
 rocket.gemfile_launch
-rocket.mongo_launch       if rocket.mongo?
-rocket.postgres_launch    if rocket.postgres?
+rocket.mongo_launch
+rocket.postgres_launch
 rocket.rspec_launch
 rocket.configatron_launch
 rocket.application_launch
-rocket.bootstrap_launch   if rocket.bootstrap?
+rocket.bootstrap_launch
 rocket.git_launch
 rocket.guard_launch
