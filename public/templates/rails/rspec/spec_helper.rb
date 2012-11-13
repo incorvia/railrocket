@@ -38,9 +38,9 @@ RSpec.configure do |config|
 
   # Global before block
   config.before(:each) do
-  <% if mongo? -%>
+<% if mongo? -%>
     Mongoid.purge!
-  <% end -%>
+<% end -%>
     Time.zone = 'UTC'
     Timecop.freeze(DateTime.now)
   end
