@@ -68,14 +68,14 @@ class RailRocket
     end
 
     def rails
-      "#{raw_git}/rails/rails/master"
+      "#{raw_git}/rails/rails/3-2-stable"
     end
 
     def raw_git
       "https://raw.github.com"
     end
 
-    def master_templates(url)
+    def rails_templates(url)
       "#{rails}/railties/lib/rails/generators/rails/app/templates/#{url}"
     end
 
@@ -99,7 +99,7 @@ class RailRocket
 
     def application_config_file(path, destination_ext = nil)
       remove_file(path, silent)
-      source = master_templates("#{path}#{destination_ext if destination_ext}")
+      source = rails_templates("#{path}#{destination_ext if destination_ext}")
       remote_template(source, path)
     end
 
@@ -247,7 +247,7 @@ class RailRocket
 
     def postgres_launch
       if postgres?
-        source = master_templates('config/databases/postgresql.yml')
+        source = rails_templates('config/databases/postgresql.yml')
         destination = 'config/database.yml'
         remote_template(source, destination)
       end
