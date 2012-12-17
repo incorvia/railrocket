@@ -23,4 +23,5 @@ group :development, :test do
   gem 'rb-fsevent'
   gem 'terminal-notifier-guard'
   gem 'rspec-rails'
+  gem 'poltergeist'
 end
